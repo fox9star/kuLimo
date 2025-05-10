@@ -1,1 +1,1 @@
-# kulimo
+# kuLimo
