@@ -1,0 +1,31 @@
+#!/usr/bin/env python3
+
+import rospy
+from geometry_msgs.msg import Twist
+from std_msgs.msg import String
+
+
+class Circle_limo:
+    def __init__(self):
+        self.pub = rospy.Publisher("cmd_vel", Twist, queue_size=10)
+        rospy.Timer(rospy.Duration(nsecs=33_000_000), self.timer_cb)
+
+    def timer_cb(self, _event):
+        twist = Twist()
+        twist.linear.x = 0.2
+        twist.angular.z = 1.5
+        self.pub.publish(twist)
+
+
+def main():
+    rospy.init_node("circle_limo")
+    node = Circle_limo()
+    while not rospy.is_shutdown():
+        rospy.spin()
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except rospy.ROSInterruptException:
+        pass

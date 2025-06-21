@@ -1,0 +1,33 @@
+#!/usr/bin/env python3
+
+# rosrun hello_ros mtsub
+# rosrun hello_ros mtpub
+
+import rospy
+from std_msgs.msg import Header, String
+
+
+class MTsub:
+    def __init__(self):
+        self.sub = rospy.Subscriber('time', Header, self.sub_callback1)
+        self.sub = rospy.Subscriber('message', String, self.sub_callback2)
+
+    def sub_callback1(self, msg: Header):
+        rospy.loginfo(f"들어온 메세지 by mtsub: {msg.frame_id}")
+        rospy.loginfo(f"들어온 시간 by mtsub: {msg.stamp.secs}")
+
+    def sub_callback2(self, msg: String):
+        rospy.loginfo(f"들어온 메세지 by mtsub: {msg.data}")
+
+
+def main():
+    rospy.init_node('mtsub')
+    node = MTsub()
+    while not rospy.is_shutdown():
+        rospy.spin()
+
+if __name__ == "__main__":
+    try:
+        main()
+    except rospy.ROSInterruptException:
+        pass

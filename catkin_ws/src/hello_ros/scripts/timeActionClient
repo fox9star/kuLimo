@@ -1,0 +1,38 @@
+import actionlib
+import rospy
+from hello_ros.msg import TimeWaitAction, TimeWaitFeedback, TimeWaitGoal, TimeWaitResult
+
+
+class ActionClient:
+    def __init__(self):
+        self.client = actionlib.SimpleActionClient('timer_action', TimeWaitAction)
+        rospy.loginfo("action 클라이언트가 요청 되었습니다.")
+        self.client.wait_for_server() # 서버 요청을 기다림.
+
+        goal = TimeWaitGoal()
+        goal.time_to_wait = 5.0
+        self.client.send_goal(goal) # 서버에 goal 을 요청함!
+
+        # 동기적 처리 코드 # result 가 올때 까지 계속 대기.
+        finished = self.client.wait_for_result(rospy.Duration(10.0)) # type: ignore
+
+        if finished:
+            state = self.client.get_state()
+            result : TimeWaitResult= self.client.get_result() # type: ignore
+            rospy.loginfo(f"Action finished : {state}")
+            rospy.loginfo(f"Result : 경과 시간 {result.time_elapsed}, 피드백 횟수 {result.updates_sent}")
+        else:
+            rospy.loginfo(f"액션 서버가 완료하지 못함")
+
+        # 비동기적 처리 코드 ... callback...
+
+def main():
+    rospy.init_node("action_client")
+    node = ActionClient()
+    try:
+        rospy.spin()
+    except rospy.ROSInterruptException:
+        pass
+
+if __name__ == "__main__":
+    main()

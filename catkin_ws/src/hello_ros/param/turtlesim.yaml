@@ -1,0 +1,7 @@
+turtlesim_node:
+  background_b: 10
+  background_g: 200
+  background_r: 10
+
+move_turtle:
+  angle_vel: 4.0

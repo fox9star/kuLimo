@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+import rospy
+from dynamic_reconfigure.server import Server
+from geometry_msgs.msg import Twist
+from hello_ros.cfg import TurtleConfig
+
+
+class TurtleController:
+    def __init__(self):
+        rospy.init_node('hello', anonymous=True)
+        self.pub = rospy.Publisher('turtle1/cmd_vel', Twist, queue_size=10)
+        self.data = Twist()
+        self.data.angular.z = rospy.get_param('~angle_vel', 3.0) # type: ignore
+
+        self.srv = Server(TurtleConfig, self.config_callback)
+        rospy.Timer(rospy.Duration(nsecs=330_000_000), self.pub_callback)
+
+    def config_callback(self, config, level):
+        """Dynamic reconfigure 콜백: angle_vel 변경 시 호출"""
+        self.data.angular.z = config.angle_vel
+        rospy.loginfo(f"angle_vel updated to: {self.data.angular.z}")
+        return config
+
+    def pub_callback(self, _event):
+        self.data.linear.x += 0.1
+        if self.data.linear.x > 10:
+            self.data.linear.x = 0
+        self.pub.publish(self.data)
+
+def main():
+    node = TurtleController()
+    try:
+        rospy.spin()
+    except rospy.ROSInterruptException:
+        pass
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+    <node name="turtlesim_node" pkg="turtlesim" type="turtlesim_node" output="screen">
+        <rosparam file="$(find hello_ros)/param/turtlesim.yaml" command="load" />
+        <!-- <param name="background_b" value="10"/>
+        <param name="background_g" value="10"/>
+        <param name="background_r" value="10"/> -->
+    </node>
+    <node name="move_turtle" pkg="hello_ros" type="moveTurtleClass" output="screen">
+        <rosparam file="$(find hello_ros)/param/turtlesim.yaml" command="load" />
+    </node>
+</launch>

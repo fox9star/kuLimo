@@ -1,0 +1,31 @@
+#!/usr/bin/env python3
+
+import rospy
+from hello_ros.msg import MyTopic
+
+
+class Mpub:
+    def __init__(self):
+        self.pub = rospy.Publisher('message', MyTopic, queue_size=10)
+        self.data = MyTopic()
+        rospy.Timer(rospy.Duration(nsecs=330_000_000), self.print_hello)
+
+    def print_hello(self, _event):
+        self.data.first_name = "Choi"
+        self.data.age = 40
+        self.data.score = 75
+        rospy.loginfo(f"name : {self.data.first_name} ,age {self.data.age} , score : {self.data.score}")
+        self.pub.publish(self.data)
+
+
+def main():
+    rospy.init_node('mpub')
+    node = Mpub()
+    while not rospy.is_shutdown():
+        rospy.spin()
+
+if __name__ == "__main__":
+    try:
+        main()
+    except rospy.ROSInterruptException:
+        pass

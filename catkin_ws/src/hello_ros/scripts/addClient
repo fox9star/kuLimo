@@ -1,0 +1,43 @@
+#!/usr/bin/env python3
+
+import random
+
+import rospy
+from hello_ros.srv import AddTwoInts, AddTwoIntsRequest, AddTwoIntsResponse
+
+
+class SerivceClinet:
+    def __init__(self):
+        self.client = rospy.ServiceProxy('add_two_int', AddTwoInts)
+        while not rospy.is_shutdown():
+            try:
+                self.client.wait_for_service(timeout=1.0)
+                break
+            except rospy.ROSException:
+                rospy.loginfo("service not available!!")
+        rospy.Timer(rospy.Duration(nsecs=7_000_000_000), self.send_request)
+
+    def send_request(self, _event):
+        data = AddTwoIntsRequest()
+        data.a = random.randint(0, 100)
+        data.b = random.randint(0, 100)
+        li = ["plus", "minus", "Unkown"]
+        data.op = random.choice(li)
+        rospy.loginfo(f"서비스 요청 {data.a} {data.b} {data.op}")
+
+        response :AddTwoIntsResponse = self.client.call(data) # 동기적!! 5초 동안 대기.
+        rospy.loginfo(f"{response.message} : {response.result}")
+        rospy.loginfo(f"{response.success}")
+
+def main():
+    rospy.init_node('service_client')
+    node = SerivceClinet()
+    # node.send_request() 필요한 곳에 쓴다!!
+    while not rospy.is_shutdown():
+        rospy.spin()
+
+if __name__ == "__main__":
+    try:
+        main()
+    except rospy.ROSInterruptException:
+        pass

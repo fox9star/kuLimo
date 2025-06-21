@@ -1,0 +1,40 @@
+#!/usr/bin/env python3
+
+import rospy
+from std_msgs.msg import Header, String
+
+
+class MTpub:
+    def __init__(self):
+        self.mpub = rospy.Publisher('message2', String, queue_size=10)
+        rospy.Timer(rospy.Duration(nsecs=330_000_000), self.message_pub)
+
+        self.tpub = rospy.Publisher('time', Header, queue_size=10)
+        rospy.Timer(rospy.Duration(nsecs=330_000_000), self.time_pub)
+
+        self.tdata = Header()
+        self.mdata = String()
+
+    def time_pub(self, _event):
+        self.tdata.frame_id = "base time by MTpub"
+        self.tdata.stamp = rospy.Time.now()
+        rospy.loginfo(self.tdata.frame_id)
+        rospy.loginfo(f'{self.tdata.stamp.secs}')
+        self.tpub.publish(self.tdata)
+
+    def message_pub(self, _event):
+        self.mdata.data = "message from mtpub!!!"
+        rospy.loginfo(self.mdata.data)
+        self.mpub.publish(self.mdata)
+
+def main():
+    rospy.init_node('mtpub')
+    node = MTpub()
+    while not rospy.is_shutdown():
+        rospy.spin()
+
+if __name__ == "__main__":
+    try:
+        main()
+    except rospy.ROSInterruptException:
+        pass
