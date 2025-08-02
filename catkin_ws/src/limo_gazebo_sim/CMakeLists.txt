@@ -10,10 +10,12 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   sensor_msgs
   geometry_msgs
+  tf
   tf2
   tf2_ros
   gazebo_dev
   gazebo_msgs
+  nav_msgs
 )
 catkin_package(
   INCLUDE_DIRS include
@@ -28,6 +30,12 @@ include_directories(
 
 add_library(gazebo_ros_ackerman src/gazebo_ros_ackerman_drive.cpp)
 target_link_libraries(gazebo_ros_ackerman ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+
+add_library(limo_gazebo STATIC src/limo_skid_steer.cpp)
+target_link_libraries(limo_gazebo ${catkin_LIBRARIES})
+
+add_executable(limo_skid_steer_controller src/limo_skid_steer_controller.cpp)
+target_link_libraries(limo_skid_steer_controller limo_gazebo ${catkin_LIBRARIES})
 
 install(TARGETS gazebo_ros_ackerman
 ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>limo_application</name>
+  <version>0.0.1</version>
+  <description>The limo_application package provides various scripts and nodes for controlling and interacting with the LIMO robot.</description>
+
+  <maintainer email="your_email@example.com">Your Name</maintainer>
+  <license>TODO</license> <url type="website">http://wiki.ros.org/limo_application</url>
+  <url type="bugtracker">https://github.com/your_github_username/limo_application/issues</url>
+  <url type="repository">https://github.com/your_github_username/limo_application</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>dynamic_reconfigure</depend>
+  <depend>geometry_msgs</depend>
+  <depend>roscpp</depend>
+  <depend>rospy</depend>
+  <depend>std_msgs</depend>
+  <depend>message_generation</depend>
+  <depend>actionlib</depend>
+  <depend>actionlib_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>tf</depend>
+  <depend>python-rospy</depend> <exec_depend>message_runtime</exec_depend>
+
+  </package>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Limo 이동 제어 + ROS 통신</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f4f4f4;
+      color: #333;
+    }
+    #container {
+      position: relative;
+      width: 800px;
+      height: 300px;
+      border: 2px solid #ccc;
+      margin: 30px auto;
+      background-color: white;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .table {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      background-color: #eee;
+      border: 2px solid #333;
+      text-align: center;
+      line-height: 100px;
+      font-weight: bold;
+      border-radius: 5px;
+    }
+    #table1 { top: 50px; left: 50px; }
+    #table2 { top: 50px; left: 600px; }
+    #limo {
+      position: absolute;
+      width: 80px;
+      height: 40px;
+      background-color: crimson;
+      color: white;
+      text-align: center;
+      line-height: 40px;
+      top: 200px;
+      left: 50px;
+      border-radius: 5px;
+      box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+      transition: left 0.1s linear;
+    }
+    .controls {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .controls button {
+      margin: 0 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      background-color: #007bff;
+      color: white;
+      transition: background-color 0.2s ease;
+    }
+    .controls button:hover {
+      background-color: #0056b3;
+    }
+    #ros-status {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 1.1em;
+      font-weight: bold;
+      padding: 10px;
+      border-radius: 5px;
+      width: fit-content;
+      margin-left: auto;
+      margin-right: auto;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .status-connected {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .status-error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .status-closed {
+      background-color: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeeba;
+    }
+    .status-connecting {
+      background-color: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="container">
+    <div class="table" id="table1">1번 테이블</div>
+    <div class="table" id="table2">2번 테이블</div>
+    <div id="limo">Limo</div>
+  </div>
+
+  <div class="controls">
+    <button id="btn1">1번</button>
+    <button id="btnStop">Stop</button>
+    <button id="btn2">2번</button>
+  </div>
+
+  <div id="ros-status" class="status-connecting">ROS 연결 중...</div>
+
+  <!-- ✅ ES Module 방식으로 로드 -->
+  <script type="module">
+    import * as ROSLIB from './roslib.min.js'; // 로컬 위치에 있는 모듈 파일
+
+    const rosStatusDiv = document.getElementById('ros-status');
+
+    function updateRosStatus(message, className) {
+      rosStatusDiv.textContent = message;
+      rosStatusDiv.className = '';
+      rosStatusDiv.classList.add(className);
+    }
+
+    const ros = new ROSLIB.Ros({ url: 'ws://localhost:9090' });
+
+    ros.on('connection', () => {
+      console.log('✅ ROS에 연결되었습니다.');
+      updateRosStatus('✅ ROS에 연결되었습니다.', 'status-connected');
+    });
+
+    ros.on('error', (error) => {
+      console.error('❌ 연결 오류:', error);
+      updateRosStatus('❌ 연결 오류 발생!', 'status-error');
+    });
+
+    ros.on('close', () => {
+      console.warn('🔌 ROS 연결이 종료되었습니다.');
+      updateRosStatus('🔌 ROS 연결이 종료되었습니다.', 'status-closed');
+    });
+
+    const cmdPub = new ROSLIB.Topic({
+      ros: ros,
+      name: '/limo/move_command',
+      messageType: 'std_msgs/String'
+    });
+
+    let interval = null;
+
+    function moveAndPublish(targetId) {
+      publishCommand(targetId);
+      clearInterval(interval);
+
+      const limo = document.getElementById('limo');
+      const target = document.getElementById(targetId);
+      const targetLeft = target.offsetLeft;
+
+      interval = setInterval(() => {
+        const current = parseInt(limo.style.left, 10) || 0;
+        const step = current < targetLeft ? 2 : -2;
+        const next = current + step;
+        limo.style.left = next + 'px';
+
+        if ((step > 0 && next >= targetLeft) || (step < 0 && next <= targetLeft)) {
+          limo.style.left = targetLeft + 'px';
+          clearInterval(interval);
+        }
+      }, 10);
+    }
+
+    function stopAndPublish() {
+      clearInterval(interval);
+      publishCommand('stop');
+    }
+
+    function publishCommand(data) {
+      const msg = new ROSLIB.Message({ data });
+      cmdPub.publish(msg);
+      console.log(`📡 ROS 명령 전송됨: ${data}`);
+    }
+
+    document.getElementById('btn1').addEventListener('click', () => moveAndPublish('table1'));
+    document.getElementById('btn2').addEventListener('click', () => moveAndPublish('table2'));
+    document.getElementById('btnStop').addEventListener('click', stopAndPublish);
+  </script>
+
+</body>
+</html>
